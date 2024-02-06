@@ -9,7 +9,8 @@ import retrofit2.http.POST
 
 interface OJPServiceAPI {
     @Headers(
-        "Authorization: OJP_KEY",
+        // registered by ojp_android_demo@m23.ch
+        "Authorization: eyJvcmciOiI2NDA2NTFhNTIyZmEwNTAwMDEyOWJiZTEiLCJpZCI6ImE2NmQyNWRkNzcyNDRmMTA4ZmMwODljYzczZmZlODBhIiwiaCI6Im11cm11cjEyOCJ9",
         "Content-Type: text/xml",
     )
     @POST("ojp20")
