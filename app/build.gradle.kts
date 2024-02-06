@@ -65,4 +65,13 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("junit:junit:4.13.2")
+
+    implementation("androidx.activity:activity-ktx:1.9.0-alpha02")
+    implementation("androidx.core:core-ktx:1.13.0-alpha04")
+    implementation("com.google.android.gms:play-services-location:21.1.0")
+    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.12")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-simplexml:2.9.0")
+    implementation("org.simpleframework:simple-xml:2.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0-RC2")    
 }
