@@ -2,7 +2,7 @@ package com.example.ojp_android_demo.ojp.model.request
 
 import android.location.Location
 import com.example.ojp_android_demo.ojp.model.location.GeoPosition
-import com.example.ojp_android_demo.ojp.utils.GeoHelpers
+import com.example.ojp_android_demo.ojp.utils.roundTo
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -186,10 +186,10 @@ data class Rectangle(
             val deltaLongitude = boxWidth / longitudeDegreeLength
             val deltaLatitude = boxWidth / latitudeDegreeLength
 
-            val boxXMin = GeoHelpers.roundCoordinate(geoPosition.longitude - deltaLongitude / 2)
-            val boxYMin = GeoHelpers.roundCoordinate(geoPosition.latitude - deltaLatitude / 2)
-            val boxXMax = GeoHelpers.roundCoordinate(geoPosition.longitude + deltaLongitude / 2)
-            val boxYMax = GeoHelpers.roundCoordinate(geoPosition.latitude + deltaLatitude / 2)
+            val boxXMin = (geoPosition.longitude - deltaLongitude / 2).roundTo(6)
+            val boxYMin = (geoPosition.latitude - deltaLatitude / 2).roundTo(6)
+            val boxXMax = (geoPosition.longitude + deltaLongitude / 2).roundTo(6)
+            val boxYMax = (geoPosition.latitude + deltaLatitude / 2).roundTo(6)
 
             val rectangle = Rectangle.initWithBBOXCoordinates(boxXMin = boxXMin, boxYMin = boxYMin, boxXMax = boxXMax, boxYMax = boxYMax)
             return rectangle

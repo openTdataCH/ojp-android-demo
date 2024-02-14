@@ -14,8 +14,4 @@ object GeoHelpers {
         val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
         return earthRadius * c * 1000
     }
-
-    fun roundCoordinate(value: Double, scale: Int = 6): Double {
-        return BigDecimal(value).setScale(scale, RoundingMode.HALF_EVEN).toDouble()
-    }
 }
