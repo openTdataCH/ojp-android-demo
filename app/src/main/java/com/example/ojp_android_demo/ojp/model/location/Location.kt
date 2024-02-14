@@ -6,11 +6,6 @@ open class Location (
     var geoPosition: GeoPosition?,
     var stopPlace: StopPlace?
 ) {
-    override fun toString(): String {
-        val debugParts = stopPlace?.stopPlaceName + " (" + (stopPlace?.stopPlaceRef ?: "n/a") + ")"
-        return debugParts
-    }
-
     companion object {
         fun Empty(): Location {
             val location = Location(null, null)

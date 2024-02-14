@@ -7,7 +7,7 @@ import java.io.StringReader
 import com.example.ojp_android_demo.ojp.model.location.Location
 import com.example.ojp_android_demo.ojp.utils.TreeNode
 
-typealias XmlElementCallback = (MutableList<Location>) -> Unit
+typealias XmlElementCallback = (Array<Location>) -> Unit
 
 fun parseXmlWithPullParserCallback(xmlString: String, callback: XmlElementCallback) {
     val factory = XmlPullParserFactory.newInstance()
@@ -73,5 +73,5 @@ fun parseXmlWithPullParserCallback(xmlString: String, callback: XmlElementCallba
         eventType = xpp.next()
     }
 
-    callback(locations)
+    callback(locations.toTypedArray())
 }

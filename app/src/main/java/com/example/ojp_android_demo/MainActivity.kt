@@ -26,6 +26,8 @@ import com.google.android.gms.location.LocationServices
 
 import com.example.ojp_android_demo.ojp.model.request.OJP
 import com.example.ojp_android_demo.ojp.model.location.Location
+import com.example.ojp_android_demo.ojp.model.location.NearbyLocation
+import com.example.ojp_android_demo.ojp.model.request.OJP_LIR_Callback
 import com.example.ojp_android_demo.ojp.network.ClientService
 import com.example.ojp_android_demo.ojp.network.OJPServiceAPI
 import com.example.ojp_android_demo.ojp.utils.parser.parseXmlWithPullParserCallback
@@ -33,8 +35,8 @@ import com.example.ojp_android_demo.ojp.utils.parser.parseXmlWithPullParserCallb
 class MainActivity : ComponentActivity() {
     private val DEBUG_TAG = "OJP_DEBUG"
 
-    private lateinit var adapter: ArrayAdapter<Location>
-    private var itemsList = mutableListOf<Location>()
+    private lateinit var adapter: ArrayAdapter<NearbyLocation>
+    private var itemsList = mutableListOf<NearbyLocation>()
 
     private lateinit var searchInput: EditText
     private lateinit var resultsListView: ListView
@@ -58,7 +60,7 @@ class MainActivity : ComponentActivity() {
         initSearchInputListener()
     }
 
-    private fun searchLocations(ojpRequest: OJP) {
+    private fun fetchLocationInformationRequest(ojpRequest: OJP, callback: OJP_LIR_Callback) {
         val client = ClientService.createAPIService().create(OJPServiceAPI::class.java)
         val call = client.fetchOJPResponse(ojpRequest.asRequestBody())
         Log.d(DEBUG_TAG, "====================================")
@@ -70,21 +72,17 @@ class MainActivity : ComponentActivity() {
                 if (response.isSuccessful) {
                     val responseXML = response.body()?.string() ?: "<foo/>"
                     parseXmlWithPullParserCallback(responseXML) { locations ->
-                        itemsList.clear()
-                        itemsList.addAll(locations)
-                        adapter.notifyDataSetChanged()
+                        callback.onSuccess(locations)
                     }
                 } else {
                     Log.e(DEBUG_TAG, "TODO handle response failure")
-                    itemsList.clear()
-                    adapter.notifyDataSetChanged()
+                    callback.onFailure(response.message())
                 }
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                Log.e(DEBUG_TAG, "TODO handle errors")
-                itemsList.clear()
-                adapter.notifyDataSetChanged()
+                Log.e(DEBUG_TAG, "ERROR " +  t.message)
+                callback.onFailure(t.message ?: "HTTP error")
             }
         })
     }
@@ -112,11 +110,35 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun updateLocations(locations: Array<NearbyLocation>) {
+        itemsList.clear()
+        itemsList.addAll(locations)
+        adapter.notifyDataSetChanged()
+    }
+
     private fun getCurrentGeoLocation() {
-        fusedLocationClient.lastLocation.addOnSuccessListener { location : GeoLocation? ->
-            location?.let {
-                val request = OJP.initWithGeoLocationAndBoxSize(location, 1000.0)
-                searchLocations(request)
+        fusedLocationClient.lastLocation.addOnSuccessListener { geoLocation : GeoLocation? ->
+            geoLocation?.let {
+                val request = OJP.initWithGeoLocationAndBoxSize(geoLocation, 1000.0)
+                fetchLocationInformationRequest(request, object: OJP_LIR_Callback {
+                    override fun onSuccess(locations: Array<Location>) {
+                        val nearbyLocations: MutableList<NearbyLocation> = mutableListOf()
+                        for (location in locations) {
+                            val nearbyLocation = NearbyLocation.initWithNearbyLocation(geoLocation, location)
+                            if (nearbyLocation != null) {
+                                nearbyLocations.add(nearbyLocation)
+                            }
+                        }
+
+                        nearbyLocations.sortBy { it.distance }
+
+                        updateLocations(nearbyLocations.toTypedArray())
+                    }
+
+                    override fun onFailure(error: String) {
+                        updateLocations(emptyArray<NearbyLocation>())
+                    }
+                })
             }
         }
     }
@@ -131,7 +153,22 @@ class MainActivity : ComponentActivity() {
 
                 searchRunnable = Runnable {
                     val request = OJP.initWithName(s.toString())
-                    searchLocations(request)
+                    fetchLocationInformationRequest(request, object: OJP_LIR_Callback {
+                        override fun onSuccess(locations: Array<Location>) {
+                            val nearbyLocations: MutableList<NearbyLocation> = mutableListOf()
+                            for (location in locations) {
+                                val nearbyLocation = NearbyLocation(location, null)
+                                if (nearbyLocation != null) {
+                                    nearbyLocations.add(nearbyLocation)
+                                }
+                            }
+                            updateLocations(nearbyLocations.toTypedArray())
+                        }
+
+                        override fun onFailure(error: String) {
+                            updateLocations(emptyArray<NearbyLocation>())
+                        }
+                    })
                 }.also {
                     handler.postDelayed(it, 300)
                 }
